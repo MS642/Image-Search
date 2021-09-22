@@ -1,9 +1,12 @@
 # Image-Search
+run `python .\image-search.py --help` to show function details
 
-run python ./main.py
+To run a search on 'beagle':
 
-pip install missing packages
+run `python .\image-search.py -k 'beagle'`
+
+`pip install <missing packages>`
 
 Wait for images names to be cached
 
-Enter search word/s and get the results
+A new window will open up with the results
