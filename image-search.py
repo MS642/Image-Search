@@ -47,14 +47,17 @@ def add_to_cache(image, df):
             name = name.strip()
             images_db[name].add(image)
             for word in name.split(' '):
-                images_db[word].add(image)
+                images_db[word.lower()].add(image)
 
-def predict_images(dir):
+def predict_images(dir, verbose):
     # Predict labels with associated probabilities for unseen images
     images = glob.glob(dir)
     for image in images:
         img = Image.open(image)
         df = classify_image(img)
+        if verbose:
+            print(image)
+            print(df)
         add_to_cache(image, df)
 
 
@@ -64,27 +67,29 @@ def main():
 
     parser = argparse.ArgumentParser(
      prog='Image search',
-     description='''The program uses ML library to define the probability of 
-     images in the given directory are. Then creating a map of keywords to 
-     images of the program at startup.
+     description='''The program uses ML library to define the probability what 
+     each image could be in the given directory. Then creating a map of keywords
+     to each image of the program at startup.
      The program then takes user keyword and outputs images with those keywords ''',
      epilog='''
          The challenge was open ended and I figured with live DB, 
          having auth secrets in github wouldn't be a good idea; 
-         and therefore went with a python solution. 
+         and therefore went with a simple python solution. 
          Currently I am studing ML and AI so was interested in 
-         trying to apply what I am learning.''')
+         trying to apply what I am learning for the challenge.''')
     parser.add_argument('--keyword', '-k', action="store", type=str, nargs='?', required=True,
-                        help='an integer for the accumulator')
+                        help='search keyword')
     parser.add_argument('--directory', '-d', action="store", default="data/test_images/*.*",
                         help='valid directory of where the images are located')
+    parser.add_argument('--verbose', '-v', action="store_true",
+                        help='to allow verbose output')
 
     args = parser.parse_args()
     print(args)
-    predict_images(args.directory)
-    search_keyword = args.keyword.strip()
-    result_size = len(images_db[search_keyword])
-    if result_size:
+    predict_images(args.directory, args.verbose)
+    search_keyword = args.keyword.strip().lower()
+    if search_keyword in images_db:
+        result_size = len(images_db[search_keyword])
         fig = plt.figure(figsize=(result_size, result_size))
         for ind, image in enumerate(images_db[search_keyword]):
             img = Image.open(image)
@@ -93,7 +98,7 @@ def main():
             plt.imshow(img)
         mng = plt.get_current_fig_manager()
         mng.full_screen_toggle()
-        axcut = plt.axes([0.37, 0.0, 0.2, 0.075])
+        axcut = plt.axes([0.4, 0.0, 0.2, 0.075])
         bcut = plt.Button(axcut, 'Exit Search Results', color='grey', hovercolor='red')
         bcut.on_clicked(_exit_program)
         plt.show()
